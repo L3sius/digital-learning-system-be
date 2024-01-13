@@ -1,0 +1,1 @@
+web: java -jar target/digital-learning-system-be-0.0.1.jar
