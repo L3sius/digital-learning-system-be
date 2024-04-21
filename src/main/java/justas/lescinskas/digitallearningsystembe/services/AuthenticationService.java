@@ -101,7 +101,7 @@ public class AuthenticationService {
         throw new RuntimeException();
     }
 
-    public String saveResults(Results results) {
+    public String saveResults(Results results) throws ExecutionException, InterruptedException {
         // Get a reference to the collection "results"
         CollectionReference resultsCollection = db.collection("results");
 
@@ -109,13 +109,9 @@ public class AuthenticationService {
         DocumentReference newResultRef = resultsCollection.document();
 
         // Set the fields of the document
-        try {
-            newResultRef.set(results).get(); // Assuming "results" is a POJO representing the data
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+
+        newResultRef.set(results).get(); // Assuming "results" is a POJO representing the data
+
 
         // Return the ID of the newly created document
         return newResultRef.getId();
