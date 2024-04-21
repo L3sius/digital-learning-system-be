@@ -1,27 +1,24 @@
 package justas.lescinskas.digitallearningsystembe.services;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.*;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
-import com.google.firebase.cloud.FirestoreClient;
 import justas.lescinskas.digitallearningsystembe.entity.RegisterUser;
+import justas.lescinskas.digitallearningsystembe.entity.Results;
 import justas.lescinskas.digitallearningsystembe.entity.User;
 import justas.lescinskas.digitallearningsystembe.entity.UserData;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -102,5 +99,70 @@ public class AuthenticationService {
         }
 
         throw new RuntimeException();
+    }
+
+    public String saveResults(Results results) {
+        // Get a reference to the collection "results"
+        CollectionReference resultsCollection = db.collection("results");
+
+        // Create a new document with a generated ID
+        DocumentReference newResultRef = resultsCollection.document();
+
+        // Set the fields of the document
+        try {
+            newResultRef.set(results).get(); // Assuming "results" is a POJO representing the data
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Return the ID of the newly created document
+        return newResultRef.getId();
+    }
+
+    public List<Results> getResults(String email) throws ExecutionException, InterruptedException {
+        List<Results> userResults = new ArrayList<>();
+
+        // Get a reference to the collection "results"
+        CollectionReference resultsCollection = db.collection("results");
+
+        // Create a query to filter results by email
+        Query query = resultsCollection.whereEqualTo("email", email);
+
+        // Execute the query
+        ApiFuture<QuerySnapshot> querySnapshot = query.get();
+
+        // Retrieve documents from the query snapshot
+        for (QueryDocumentSnapshot document : querySnapshot.get().getDocuments()) {
+            // Map document data to Results object
+            Results result = document.toObject(Results.class);
+            userResults.add(result);
+        }
+
+        return userResults;
+    }
+
+    public String getFullName(String userEmail) throws ExecutionException, InterruptedException {
+        // Get a reference to the users collection
+        CollectionReference usersCollection = db.collection("users");
+
+        // Query the users collection based on email
+        DocumentReference userDocRef = usersCollection.document(userEmail);
+
+        // Get the document snapshot
+        DocumentSnapshot userSnapshot = userDocRef.get().get();
+
+        if (userSnapshot.exists()) {
+            // Extract name and surname from the document
+            String name = userSnapshot.getString("name");
+            String surname = userSnapshot.getString("surname");
+
+            // Return the full name
+            return name + " " + surname;
+        } else {
+            // User not found
+            return null;
+        }
     }
 }

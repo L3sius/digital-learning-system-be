@@ -17,7 +17,7 @@ import java.util.List;
 public class ApplicationSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.authorizeHttpRequests((request) -> request.requestMatchers("/register", "/login", "/fetchUserData").permitAll());
+        httpSecurity.authorizeHttpRequests((request) -> request.requestMatchers("/fetchUserFullName","/fetchUserResults","/register", "/login", "/fetchUserData", "/results").permitAll());
         httpSecurity.cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource())).csrf(AbstractHttpConfigurer::disable);
         return httpSecurity.build();
     }
